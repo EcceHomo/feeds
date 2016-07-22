@@ -1,8 +1,7 @@
 import feedparser
 import os
 from datetime import datetime
-from flask import Flask
-from flask import render_template
+from flask import Flask, render_template, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_script import Manager
 from flask_bootstrap import Bootstrap
@@ -30,11 +29,12 @@ class Feeds(db.Model):
     authors = db.Column(db.String(64))
     media_thumbnail = db.Column(db.String(64))
 
-# RSS_URLS = [
-#     'http://feeds.feedburner.com/Mashable',
-#     'http://feeds.feedburner.com/crunchgear']
 
 RSS_URLS = ['http://feeds.feedburner.com/Mashable']
+
+# RSS_URLS = [
+#     'http://feeds.feedburner.com/Mashable',   # lista testiranja RSS URL-ova
+#     'http://feeds.feedburner.com/crunchgear']
 
 
 @manager.command
@@ -72,6 +72,24 @@ def connect(page, id, page1):
     articles = Feeds.query.order_by(Feeds.published.desc()).paginate(page1, 20, False)  # paginacija feeds linkova
 
     return render_template("connect.html", pages=pages, posts=feeds, pages1=articles)
+
+
+@app.route('/autocomplete')
+def autocomplete():
+    search = request.args.get('q')
+    query = db.session.query(Feeds.authors).filter(Feeds.authors.like('%' + str(search) + '%'))
+    results = [mv[0] for mv in query.distinct()]
+    return jsonify(matching_results=results)
+
+
+@app.route('/auto', defaults={'id': 0})
+@app.route('/auto/<int:id>')
+def auto(id):
+    author = request.args.get('author')
+    articles = db.session.query(Feeds).order_by(Feeds.published.desc()).filter(Feeds.authors == author).all()
+    # for i in articles:  # debuging
+    #     print i.title
+    return render_template("autocomplete.html", articles=articles)
 
 
 if __name__ == "__main__":
