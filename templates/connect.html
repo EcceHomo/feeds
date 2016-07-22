@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block page_content %}
+<html>
+
+{% if posts == [] %} {# ne prikazuj feed sa URL, prikazi Feeds #}
+
+{% for feed in pages1.items %}
+    <a href="{{ url_for('connect', page=pages.page, id=feed.id, page1=pages1.page) }}">
+    <span class="label label-default">{{feed.title|safe}}</span>
+    </a>
+    </br>
+{% endfor %}
+
+{% if pages1.has_prev %}
+<a href="{{ url_for('connect', page=pages.page, id=0, page1=pages1.prev_num) }}">&lt;&lt; Novi feeds</a>
+{% else %}
+&lt;&lt; Novi feeds
+{% endif %} | 
+{% if pages1.has_next %}
+<a href="{{ url_for('connect', page=pages.page, id=0, page1=pages1.next_num) }}">Stari feeds &gt;&gt;</a>
+{% else %}
+Stari feeds &gt;&gt;
+{% endif %}
+
+
+
+
+    <head>
+        <title>Feeds</title>
+    </head>
+    <body>
+        <h1>Feeds</h1>
+        {% for feed in pages.items %}
+            <b><a href="{{feed.link}}">{{feed.title|safe}}</a></b><br />
+            <p>{{feed.authors}}</p>
+            <i>{{feed.published}}</i><br />
+            <p><img src="{{feed.media_thumbnail}}" height="100" width="50"></p>
+            <hr />
+        {% endfor %}
+        {% if pages.has_prev %}
+        <a href="{{ url_for('connect', page=pages.prev_num, id=0, page1=pages1.page) }}">&lt;&lt; Novi feeds</a>
+        {% else %}
+        &lt;&lt; Novi feeds
+        {% endif %} | 
+        {% if pages.has_next %}
+        <a href="{{ url_for('connect', page=pages.next_num, id=0, page1=pages1.page) }}">Stari feeds &gt;&gt;</a>
+        {% else %}
+        Stari feeds &gt;&gt;
+        {% endif %}
+    </body>
+</html>
+
+
+
+
+{% else %}
+
+{% for post in posts %} {# prikazuj feed sa URL, ne prikazi Feeds #}
+
+<b><a href="{{post.link}}">{{post.title|safe}}</a></b><br />
+<p>{{post.authors}}</p>
+<i>{{post.published}}</i><br />
+<p><img src="{{post.media_thumbnail}}" height="100" width="50"></p>
+<a href="{{ url_for('connect', page=pages.page, id=0, page1=pages1.page) }}">&lt;&lt;Povratak</a>
+<hr />
+
+
+
+
+{% for feed in pages1.items %}
+    <a href="{{ url_for('connect', page=pages.page, id=feed.id, page1=pages1.page) }}">
+    <span class="label label-default">{{feed.title|safe}}</span>
+    </a>
+    </br>
+{% endfor %}
+
+{% if pages1.has_prev %}
+<a href="{{ url_for('connect', page=pages.page, id = post.id, page1=pages1.prev_num) }}">&lt;&lt; Novi feeds</a>
+{% else %}
+&lt;&lt; Novi feeds
+{% endif %} | 
+{% if pages1.has_next %}
+<a href="{{ url_for('connect', page=pages.page, id = post.id, page1=pages1.next_num) }}">Stari feeds &gt;&gt;</a>
+{% else %}
+Stari feeds &gt;&gt;
+{% endif %}
+
+{% endfor %}
+
+
+
+
+{% endif %}
+
+
+
+{% endblock %}

@@ -37,12 +37,41 @@ class Feeds(db.Model):
 RSS_URLS = ['http://feeds.feedburner.com/Mashable']
 
 
+@manager.command
+def insert():
+    """Pokreni spremanje aktivnih feeds"""
+    posts = []
+    for url in RSS_URLS:
+        posts.extend(feedparser.parse(url).entries)
+
+    for feed in posts:
+        exists = db.session.query(Feeds.id).filter_by(title=feed.title).scalar() is not None
+        if not exists:
+            clean_published = feed.published.replace(",", "")[:-6]
+            db.session.add(Feeds(
+                title=feed.title, published=datetime.strptime(clean_published, '%a %d %b %Y %H:%M:%S'), link=feed.link,
+                authors=" ".join(feed.authors[0].values()), media_thumbnail=feed.media_thumbnail[0]["url"]))
+            db.session.commit()
+
+
 @app.route("/")
 def main():
     articles = []
     for url in RSS_URLS:
         articles.extend(feedparser.parse(url).entries)  # sakupi live postove i posalji u template
     return render_template("home.html", articles=articles)
+
+
+@app.route('/connect', defaults={'page': 1, 'id': 0, 'page1': 1})
+@app.route("/connect/<int:page>/<int:id>/<int:page1>")
+def connect(page, id, page1):
+    pages = Feeds.query.order_by(Feeds.published.desc()).paginate(page, 20, False)      # paginacija database feeds
+    feeds = db.session.query(Feeds).filter_by(id=id)                                    # povezivanje id feeds-a
+    if feeds.all() == []:
+        feeds = []
+    articles = Feeds.query.order_by(Feeds.published.desc()).paginate(page1, 20, False)  # paginacija feeds linkova
+
+    return render_template("connect.html", pages=pages, posts=feeds, pages1=articles)
 
 
 if __name__ == "__main__":
