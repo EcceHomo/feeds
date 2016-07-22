@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block page_content %}
+
+<html>
+    <head>
+        <title>Live Feeds</title>
+    </head>
+    <body>
+        <h1>Live Feeds</h1>
+        {% for article in articles %}
+            <b><a href="{{article.link}}">{{article.title|safe}}</a></b><br />
+            <p>{{article.authors[0].values()|join(' ')}}</p>
+            <i>{{article.published[:-5]}}</i><br />
+            <p><img src="{{article.media_thumbnail[0]["url"]}}" height="100" width="50"></p>
+            <hr />
+        {% endfor %}
+     
+    </body>
+</html>
+{% endblock %}
